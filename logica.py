@@ -1,4 +1,5 @@
 import random
+import time  # Importar la biblioteca time
 
 MOVIMIENTOS_CABALLO = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
 
@@ -55,34 +56,62 @@ def verificar_fin_juego(juego):
     return not movimientos_verdes and not movimientos_rojos
 
 def movimiento_maquina(juego):
-    mejor_movimiento = minimax(juego, juego['profundidad'], True)
-    if mejor_movimiento:
-        realizar_movimiento(juego, mejor_movimiento, 'verde')
-    juego["turno"] = 'rojo'
+    turno_actual = juego["turno"]
+    movimientos_validos = obtener_movimientos_validos(juego, turno_actual)
 
-def minimax(juego, profundidad, es_maximizador):
+    if movimientos_validos:
+        mejor_movimiento = minimax(juego, juego['profundidad'], turno_actual == 'verde')
+        if mejor_movimiento is not None:  # Verificar si hay un movimiento válido
+            realizar_movimiento(juego, mejor_movimiento, turno_actual)
+            time.sleep(1)  # Agregar un retraso de 1 segundo (ajustar según sea necesario)
+    else:
+        print(f"¡Yoshi {turno_actual} no tiene movimientos válidos!")
+        # Pasar el turno al otro jugador si no hay movimientos válidos para el jugador actual
+        otro_jugador = 'rojo' if turno_actual == 'verde' else 'verde'
+        otro_movimientos_validos = obtener_movimientos_validos(juego, otro_jugador)
+        if otro_movimientos_validos:
+            print(f"Turno para ¡Yoshi {otro_jugador}!")
+            juego["turno"] = otro_jugador
+        else:
+            # Si ninguno de los jugadores puede moverse, el juego termina
+            print("¡Fin del juego!")
+            mostrar_ganador(juego)
+            return  # Termina la función para no pasar el turno
+
+    # Pasar el turno al otro jugador incluso si la máquina no tiene movimientos válidos
+    juego["turno"] = 'rojo' if turno_actual == 'verde' else 'verde'
+def minimax(juego, profundidad, es_maximizador, alfa=float('-inf'), beta=float('inf')):
     if profundidad == 0 or verificar_fin_juego(juego):
         return evaluar_tablero(juego)
-    
+
     if es_maximizador:
         max_eval = float('-inf')
         mejor_movimiento = None
         for movimiento in obtener_movimientos_validos(juego, 'verde'):
             copia_juego = copiar_juego(juego)
             realizar_movimiento(copia_juego, movimiento, 'verde')
-            evaluacion = minimax(copia_juego, profundidad - 1, False)
-            if evaluacion > max_eval:
+            evaluacion = minimax(copia_juego, profundidad - 1, False, alfa, beta)
+            if evaluacion is not None and evaluacion > max_eval:
                 max_eval = evaluacion
                 mejor_movimiento = movimiento
+            alfa = max(alfa, evaluacion)
+            if beta <= alfa:
+                break  # Poda beta
         return mejor_movimiento if profundidad == juego['profundidad'] else max_eval
     else:
         min_eval = float('inf')
+        mejor_movimiento = None
         for movimiento in obtener_movimientos_validos(juego, 'rojo'):
             copia_juego = copiar_juego(juego)
             realizar_movimiento(copia_juego, movimiento, 'rojo')
-            evaluacion = minimax(copia_juego, profundidad - 1, True)
-            min_eval = min(min_eval, evaluacion)
-        return min_eval
+            evaluacion = minimax(copia_juego, profundidad - 1, True, alfa, beta)
+            if evaluacion is not None and evaluacion < min_eval:
+                min_eval = evaluacion
+                mejor_movimiento = movimiento
+            beta = min(beta, evaluacion)
+            if beta <= alfa:
+                break  # Poda alfa
+        return mejor_movimiento if profundidad == juego['profundidad'] else min_eval
 
 def evaluar_tablero(juego):
     return juego['puntuacion']['verde'] - juego['puntuacion']['rojo']
@@ -96,3 +125,13 @@ def copiar_juego(juego):
         "posiciones": juego["posiciones"].copy(),
         "profundidad": juego["profundidad"]
     }
+
+def mostrar_ganador(juego):
+    puntuacion_verde = juego['puntuacion']['verde']
+    puntuacion_rojo = juego['puntuacion']['rojo']
+    if puntuacion_verde > puntuacion_rojo:
+        print("¡Yoshi verde gana!")
+    elif puntuacion_rojo > puntuacion_verde:
+        print("¡Yoshi rojo gana!")
+    else:
+        print("¡Es un empate!")
