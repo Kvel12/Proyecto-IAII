@@ -19,8 +19,8 @@ def seleccionar_nivel():
 
     tk.Label(ventana, text="Seleccione el nivel", font=font_titulo).pack(pady=20)
 
-    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante'), font=font_botones,width=15).pack(pady=10)
-    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur'), font=font_botones,width=15).pack(pady=10)
+    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante'), font=font_botones, width=15).pack(pady=10)
+    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur'), font=font_botones, width=15).pack(pady=10)
     tk.Button(ventana, text="Experto", command=lambda: set_nivel('experto'), font=font_botones, width=15).pack(pady=10)
 
     # Obtener las dimensiones de la pantalla
@@ -55,7 +55,6 @@ def iniciar_interfaz(juego):
     imagen_yoshi_rojo = pygame.transform.scale(imagen_yoshi_rojo, (75, 75))
     fondo_bienvenida = pygame.image.load('images/Bienvenida.png') 
 
-
     logica.movimiento_maquina(juego)  # La máquina inicia el juego
 
     while True:
@@ -71,13 +70,13 @@ def iniciar_interfaz(juego):
                         logica.realizar_movimiento(juego, movimiento, 'rojo')
                         juego["turno"] = 'verde'
                         if logica.verificar_fin_juego(juego):
-                            mostrar_ganador(juego)
+                            mostrar_ganador(juego, pantalla)
                             pygame.quit()
                             quit()
                         else:
                             logica.movimiento_maquina(juego)
                             if logica.verificar_fin_juego(juego):
-                                mostrar_ganador(juego)
+                                mostrar_ganador(juego, pantalla)
                                 pygame.quit()
                                 quit()
 
@@ -141,12 +140,17 @@ def mostrar_informacion(pantalla, juego):
 
     # Mostrar el turno del jugador y las puntuaciones en el panel derecho
     pantalla.blit(color_jugador_line1, (620, 30))
+    
+    # Cambiar el color del texto del turno al color del Yoshi que tiene el turno
+    color_turno = (0, 255, 0) if juego['turno'] == 'verde' else (255, 0, 0)
+    color_jugador_line2 = font.render(juego['turno'].capitalize(), True, color_turno)
     pantalla.blit(color_jugador_line2, (700, 60))
+    
     pantalla.blit(puntos, (630, 140))
     pantalla.blit(texto_verde, (630, 180))
     pantalla.blit(texto_rojo, (630, 220))
     
-      # Verificar si un Yoshi se queda sin movimientos
+    # Verificar si un Yoshi se queda sin movimientos
     if not logica.obtener_movimientos_validos(juego, juego['turno']):
         yoshi_sin_movimientos = 'Verde' if juego['turno'] == 'verde' else 'Rojo'
         yoshi_sin_movimientos_line1 = font.render(f"¡El Yoshi " f"{yoshi_sin_movimientos}", True, (255, 0, 0))
@@ -164,6 +168,7 @@ def mostrar_informacion(pantalla, juego):
 def mostrar_ganador(juego, pantalla):
     total_verde = juego['puntuacion']['verde']
     total_rojo = juego['puntuacion']['rojo']
+    font = pygame.font.SysFont("Comic Sans MS", 28, bold=True)
     if total_verde > total_rojo:
         ganador_texto = font.render("¡Yoshi verde gana!", True, (0, 255, 0))  # Color verde
     elif total_rojo > total_verde:
