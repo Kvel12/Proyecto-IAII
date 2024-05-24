@@ -53,7 +53,7 @@ def iniciar_interfaz(juego):
     # Redimensionar las imágenes de Yoshi
     imagen_yoshi_verde = pygame.transform.scale(imagen_yoshi_verde, (75, 75))
     imagen_yoshi_rojo = pygame.transform.scale(imagen_yoshi_rojo, (75, 75))
-    fondo_bienvenida = pygame.image.load('images/Bienvenida.png') 
+    fondo_bienvenida = pygame.image.load('images/Bienvenida.png')
 
     logica.movimiento_maquina(juego)  # La máquina inicia el juego
 
@@ -71,16 +71,17 @@ def iniciar_interfaz(juego):
                         juego["turno"] = 'verde'
                         if logica.verificar_fin_juego(juego):
                             mostrar_ganador(juego, pantalla)
-                            break
                         else:
                             logica.movimiento_maquina(juego)
                             if logica.verificar_fin_juego(juego):
                                 mostrar_ganador(juego, pantalla)
-                                break
 
-        if not logica.obtener_movimientos_validos(juego, 'rojo') and juego["turno"] == 'rojo':
+        # Si el turno es del Yoshi rojo y no tiene movimientos válidos, pasar el turno al Yoshi verde
+        if juego["turno"] == 'rojo' and not logica.obtener_movimientos_validos(juego, 'rojo'):
             juego["turno"] = 'verde'
             logica.movimiento_maquina(juego)
+            if logica.verificar_fin_juego(juego):
+                mostrar_ganador(juego, pantalla)
 
         pantalla.fill((255, 255, 255))  # Rellenar toda la ventana con blanco
         dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo)
@@ -90,6 +91,7 @@ def iniciar_interfaz(juego):
 
         pantalla.blit(imagen_fondo_redimensionada, (600, 480))  # Mostrar la imagen de fondo en la parte inferior de la ventana
         pygame.display.update()
+
 
 def convertir_coordenadas_a_casilla(x, y):
     fila = y // 75
@@ -169,4 +171,5 @@ def mostrar_ganador(juego, pantalla):
         ganador_texto = font.render("¡Empate!", True, (0, 0, 0))  # Color negro
     
     pantalla.blit(ganador_texto, (610, 480))
+
 
