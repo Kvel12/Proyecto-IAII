@@ -12,21 +12,25 @@ def seleccionar_nivel():
     ventana = tk.Tk()
     ventana.title("Seleccionar Nivel")
 
-    ventana.geometry("300x200")  # Establecer el tamaño de la ventana
-    ventana.eval('tk::PlaceWindow . center')  # Centrar la ventana en la pantalla
+    # Configuración de tamaño de la ventana
+    ventana.geometry("450x300")
 
-    tk.Label(ventana, text="Seleccione el nivel").pack(pady=10)
-
-    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante')).pack(pady=5)
-    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur')).pack(pady=5)
-    tk.Button(ventana, text="Experto", command=lambda: set_nivel('experto')).pack(pady=5)
+    # Configuración de la fuente
+    font_titulo = ("Helvetica", 20, "bold")
+    font_botones = ("Helvetica", 16)
+    
+    tk.Label(ventana, text="Seleccione el nivel", font=font_titulo).pack(pady=20)
+    
+    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante'), font=font_botones, width=15).pack(pady=10)
+    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur'), font=font_botones, width=15).pack(pady=10)
+    tk.Button(ventana, text="Experto", command=lambda: set_nivel('experto'), font=font_botones, width=15).pack(pady=10)
     
     ventana.mainloop()
     return nivel
 
 def iniciar_interfaz(juego):
     pygame.init()
-    pantalla = pygame.display.set_mode((600, 750))  # Incrementar la altura de la pantalla
+    pantalla = pygame.display.set_mode((600, 675))  # Aumentar la altura de la ventana
     pygame.display.set_caption("Yoshi's World")
 
     # Cargar imágenes de Yoshi
@@ -36,13 +40,14 @@ def iniciar_interfaz(juego):
     # Redimensionar las imágenes a 75x75 píxeles
     imagen_yoshi_verde = pygame.transform.scale(imagen_yoshi_verde, (75, 75))
     imagen_yoshi_rojo = pygame.transform.scale(imagen_yoshi_rojo, (75, 75))
+
     logica.movimiento_maquina(juego)  # La máquina inicia el juego
 
-    juego_terminado = False
-    while not juego_terminado:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                juego_terminado = True
+                pygame.quit()
+                quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if juego["turno"] == 'rojo':
                     x, y = event.pos
@@ -52,19 +57,22 @@ def iniciar_interfaz(juego):
                         juego["turno"] = 'verde'
                         if logica.verificar_fin_juego(juego):
                             mostrar_ganador(juego)
-                            juego_terminado = True
+                            pygame.quit()
+                            quit()
                         else:
                             logica.movimiento_maquina(juego)
                             if logica.verificar_fin_juego(juego):
                                 mostrar_ganador(juego)
-                                juego_terminado = True
+                                pygame.quit()
+                                quit()
 
         if not logica.obtener_movimientos_validos(juego, 'rojo') and juego["turno"] == 'rojo':
             juego["turno"] = 'verde'
             logica.movimiento_maquina(juego)
 
+        pantalla.fill((255, 255, 255))  # Rellenar toda la ventana con blanco
         dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo)
-        mostrar_puntuacion(pantalla, juego)
+        mostrar_informacion(pantalla, juego)
         pygame.display.update()
 
 def convertir_coordenadas_a_casilla(x, y):
@@ -73,11 +81,11 @@ def convertir_coordenadas_a_casilla(x, y):
     return fila, columna
 
 def dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo):
+    colores_fondo = [(240, 217, 181), (181, 136, 99)]  # Colores del tablero de ajedrez
     for i in range(8):
         for j in range(8):
-            # Dibujar los cuadrados blancos con márgenes negras
-            pygame.draw.rect(pantalla, (255, 255, 255), (j * 75, i * 75, 75, 75))
-            pygame.draw.rect(pantalla, (0, 0, 0), (j * 75, i * 75, 75, 75), 1)
+            color_fondo = colores_fondo[(i + j) % 2]
+            pygame.draw.rect(pantalla, color_fondo, (j * 75, i * 75, 75, 75))
             if juego["tablero"][i][j] is not None:
                 color_yoshi = (0, 255, 0) if juego["tablero"][i][j] == 'verde' else (255, 0, 0)
                 pygame.draw.circle(pantalla, color_yoshi, (j * 75 + 37, i * 75 + 37), 30)
@@ -92,50 +100,15 @@ def dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo):
         i, j = juego["posiciones"]["rojo"]
         pantalla.blit(imagen_yoshi_rojo, (j * 75, i * 75))
 
-def mostrar_puntuacion(pantalla, juego):
-    font = pygame.font.SysFont(None, 36)
-    texto_verde = font.render(f"Verde: {juego['puntuacion']['verde']}", True, (0, 0, 0))
-    texto_rojo = font.render(f"Rojo: {juego['puntuacion']['rojo']}", True, (0, 0, 0))
+def mostrar_informacion(pantalla, juego):
+    font = pygame.font.SysFont("Comic Sans MS", 28, bold=True)
+    color_jugador = font.render(f"Tu eres el yoshi {juego['turno'].capitalize()}", True, (0, 0, 0))
+    texto_verde = font.render(f"Verde: {juego['puntuacion']['verde']}", True, (0, 255, 0))
+    texto_rojo = font.render(f"Rojo: {juego['puntuacion']['rojo']}", True, (255, 0, 0))
     
-    # Crear un fondo blanco detrás de los puntajes
-    fondo_puntajes = pygame.Surface((600, 50))
-    fondo_puntajes.fill((255, 255, 255))
-    
-    # Calcular las posiciones de los puntajes
-    margen_lateral = 20
-    x_verde = margen_lateral
-    x_rojo = fondo_puntajes.get_width() - margen_lateral - texto_rojo.get_width()
-    y_puntajes = (fondo_puntajes.get_height() - texto_verde.get_height()) // 2
-    
-    # Crear un fondo blanco para el texto "Yoshi's World"
-    fondo_titulo = pygame.Surface((600, 50))
-    fondo_titulo.fill((255, 255, 255))
-    
-    # Renderizar el texto "Yoshi's World"
-    texto_titulo = font.render("Yoshi's World", True, (0, 0, 0))
-    
-    # Calcular la posición del texto "Yoshi's World"
-    x_titulo = (fondo_titulo.get_width() - texto_titulo.get_width()) // 2
-    y_titulo = (fondo_titulo.get_height() - texto_titulo.get_height()) // 2
-    
-    # Crear un fondo blanco para el texto "Yoshi Verde"
-    fondo_yoshi_verde = pygame.Surface((600, 50))
-    fondo_yoshi_verde.fill((255, 255, 255))
-    
-    # Renderizar el texto "Yoshi Verde"
-    texto_yoshi_verde = font.render("Yoshi Verde", True, (0, 0, 0))
-    
-    # Calcular la posición del texto "Yoshi Verde"
-    x_yoshi_verde = (fondo_yoshi_verde.get_width() - texto_yoshi_verde.get_width()) // 2
-    y_yoshi_verde = (fondo_yoshi_verde.get_height() - texto_yoshi_verde.get_height()) // 2
-    
-    pantalla.blit(fondo_titulo, (0, 600))  # Mostrar el fondo blanco para el título
-    pantalla.blit(texto_titulo, (x_titulo, 600 + y_titulo))  # Mostrar el texto del título
-    pantalla.blit(fondo_puntajes, (0, 650))  # Mostrar el fondo blanco para los puntajes
-    pantalla.blit(texto_verde, (x_verde, 650 + y_puntajes))  # Mostrar puntaje verde
-    pantalla.blit(texto_rojo, (x_rojo, 650 + y_puntajes))  # Mostrar puntaje rojo
-    pantalla.blit(fondo_yoshi_verde, (0, 700))  # Mostrar el fondo blanco para el texto "Yoshi Verde"
-    pantalla.blit(texto_yoshi_verde, (x_yoshi_verde, 700 + y_yoshi_verde))  # Mostrar el texto "Yoshi Verde"
+    pantalla.blit(color_jugador, (150, 600))
+    pantalla.blit(texto_verde, (75, 630))
+    pantalla.blit(texto_rojo, (380, 630))
 
 
 def mostrar_ganador(juego):
