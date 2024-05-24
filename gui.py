@@ -87,7 +87,7 @@ def iniciar_interfaz(juego):
         dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo)
         mostrar_informacion(pantalla, juego)
 
-        imagen_fondo_redimensionada = pygame.transform.scale(fondo_bienvenida, (250, 200))
+        imagen_fondo_redimensionada = pygame.transform.scale(fondo_bienvenida, (270, 200))
 
         pantalla.blit(imagen_fondo_redimensionada, (600, 480))  # Mostrar la imagen de fondo en la parte inferior de la ventana
         pygame.display.update()
@@ -135,7 +135,7 @@ def mostrar_informacion(pantalla, juego):
 
     # Cambiar el color del texto del turno al color del Yoshi que tiene el turno
     color_turno = (0, 255, 0) if juego['turno'] == 'verde' else (255, 0, 0)
-    pantalla.blit(font.render("Turno de:", True, (0, 0, 0)), (620, 100))
+    pantalla.blit(font.render("Turno de yoshi", True, (0, 0, 0)), (630, 100))
     pantalla.blit(font.render(juego['turno'].capitalize(), True, color_turno), (700, 130))
 
     pantalla.blit(puntos, (630, 180))
@@ -149,14 +149,15 @@ def mostrar_informacion(pantalla, juego):
         yoshi_sin_movimientos_line1 = font.render(f"¡El Yoshi {yoshi_sin_movimientos.capitalize()}", True, color_sin_movimientos)
         yoshi_sin_movimientos_line2 = font.render(f" se quedó", True, color_sin_movimientos)
         yoshi_sin_movimientos_line3 = font.render(f" sin movimientos!", True, color_sin_movimientos)
-        pantalla.blit(yoshi_sin_movimientos_line1, (610, 350))
-        pantalla.blit(yoshi_sin_movimientos_line2, (610, 380))
-        pantalla.blit(yoshi_sin_movimientos_line3, (610, 410))
+        pantalla.blit(yoshi_sin_movimientos_line1, (610, 320))
+        pantalla.blit(yoshi_sin_movimientos_line2, (610, 350))
+        pantalla.blit(yoshi_sin_movimientos_line3, (610, 380))
 
     # Verificar si ningún Yoshi puede mover más
     if not logica.obtener_movimientos_validos(juego, 'verde') and not logica.obtener_movimientos_validos(juego, 'rojo'):
         fin_del_juego_texto = font.render("¡Fin del juego!", True, (0, 0, 0))
-        pantalla.blit(fin_del_juego_texto, (610, 450))
+        pantalla.blit(fin_del_juego_texto, (640, 450))
+        mostrar_ganador(juego, pantalla)
 
 
 def mostrar_ganador(juego, pantalla):
@@ -170,6 +171,5 @@ def mostrar_ganador(juego, pantalla):
     else:
         ganador_texto = font.render("¡Empate!", True, (0, 0, 0))  # Color negro
     
-    pantalla.blit(ganador_texto, (610, 480))
-
+    pantalla.blit(ganador_texto, (610, 500))
 
