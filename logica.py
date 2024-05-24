@@ -1,5 +1,5 @@
 import random
-import time  # Importar la biblioteca time
+import time
 
 MOVIMIENTOS_CABALLO = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
 
@@ -80,6 +80,7 @@ def movimiento_maquina(juego):
 
     # Pasar el turno al otro jugador incluso si la máquina no tiene movimientos válidos
     juego["turno"] = 'rojo' if turno_actual == 'verde' else 'verde'
+
 def minimax(juego, profundidad, es_maximizador, alfa=float('-inf'), beta=float('inf')):
     if profundidad == 0 or verificar_fin_juego(juego):
         return evaluar_tablero(juego)
@@ -130,8 +131,12 @@ def mostrar_ganador(juego):
     puntuacion_verde = juego['puntuacion']['verde']
     puntuacion_rojo = juego['puntuacion']['rojo']
     if puntuacion_verde > puntuacion_rojo:
-        print("¡Yoshi verde gana!")
+        mensaje_ganador = "¡Yoshi verde gana!"
     elif puntuacion_rojo > puntuacion_verde:
-        print("¡Yoshi rojo gana!")
+        mensaje_ganador = "¡Yoshi rojo gana!"
     else:
-        print("¡Es un empate!")
+        mensaje_ganador = "¡Es un empate!"
+    print(mensaje_ganador)
+    return mensaje_ganador
+
+       
