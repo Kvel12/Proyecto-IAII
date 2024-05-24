@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import font
 import pygame
 import logica
 
@@ -7,39 +8,53 @@ def seleccionar_nivel():
         nonlocal nivel
         nivel = n
         ventana.destroy()
-    
+
     nivel = None
     ventana = tk.Tk()
     ventana.title("Seleccionar Nivel")
 
-    # Configuración de tamaño de la ventana
-    ventana.geometry("450x300")
-
     # Configuración de la fuente
     font_titulo = ("Helvetica", 20, "bold")
     font_botones = ("Helvetica", 16)
-    
+
     tk.Label(ventana, text="Seleccione el nivel", font=font_titulo).pack(pady=20)
-    
-    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante'), font=font_botones, width=15).pack(pady=10)
-    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur'), font=font_botones, width=15).pack(pady=10)
+
+    tk.Button(ventana, text="Principiante", command=lambda: set_nivel('principiante'), font=font_botones,width=15).pack(pady=10)
+    tk.Button(ventana, text="Amateur", command=lambda: set_nivel('amateur'), font=font_botones,width=15).pack(pady=10)
     tk.Button(ventana, text="Experto", command=lambda: set_nivel('experto'), font=font_botones, width=15).pack(pady=10)
-    
+
+    # Obtener las dimensiones de la pantalla
+    ancho_pantalla = ventana.winfo_screenwidth()
+    alto_pantalla = ventana.winfo_screenheight()
+
+    # Obtener las dimensiones de la ventana
+    ancho_ventana = 450
+    alto_ventana = 300
+
+    # Calcular la posición para centrar la ventana
+    x = (ancho_pantalla // 2) - (ancho_ventana // 2)
+    y = (alto_pantalla // 2) - (alto_ventana // 2)
+
+    # Establecer la geometría de la ventana para centrarla
+    ventana.geometry(f"{ancho_ventana}x{alto_ventana}+{x}+{y}")
+
     ventana.mainloop()
     return nivel
 
 def iniciar_interfaz(juego):
     pygame.init()
-    pantalla = pygame.display.set_mode((600, 675))  # Aumentar la altura de la ventana
+    pantalla = pygame.display.set_mode((860, 675))
     pygame.display.set_caption("Yoshi's World")
 
     # Cargar imágenes de Yoshi
     imagen_yoshi_verde = pygame.image.load('images/YoshiVerde.png')
     imagen_yoshi_rojo = pygame.image.load('images/YoshiRojo.png')
 
-    # Redimensionar las imágenes a 75x75 píxeles
+    # Redimensionar las imágenes de Yoshi
     imagen_yoshi_verde = pygame.transform.scale(imagen_yoshi_verde, (75, 75))
     imagen_yoshi_rojo = pygame.transform.scale(imagen_yoshi_rojo, (75, 75))
+    fondo_bienvenida = pygame.image.load('images/Bienvenida.png') 
+
 
     logica.movimiento_maquina(juego)  # La máquina inicia el juego
 
@@ -73,6 +88,10 @@ def iniciar_interfaz(juego):
         pantalla.fill((255, 255, 255))  # Rellenar toda la ventana con blanco
         dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo)
         mostrar_informacion(pantalla, juego)
+
+        imagen_fondo_redimensionada = pygame.transform.scale(fondo_bienvenida, (250, 200))
+
+        pantalla.blit(imagen_fondo_redimensionada, (600, 480))  # Mostrar la imagen de fondo en la parte inferior de la ventana
         pygame.display.update()
 
 def convertir_coordenadas_a_casilla(x, y):
@@ -101,22 +120,56 @@ def dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo):
         pantalla.blit(imagen_yoshi_rojo, (j * 75, i * 75))
 
 def mostrar_informacion(pantalla, juego):
+
+    Yoshis_world_font = pygame.font.Font('fonts/SuperMarioBrosWii.otf', 80).render("Yoshi's World", True, (0, 0, 0))
+
+
     font = pygame.font.SysFont("Comic Sans MS", 28, bold=True)
-    color_jugador = font.render(f"Tu eres el yoshi {juego['turno'].capitalize()}", True, (0, 0, 0))
+    mensaje_bienvenida = font.render("Bienvenid@ a ", True, (0, 0, 0))
+    puntos = font.render("Puntos", True, (0, 0, 0))
+    
+    # Separar el mensaje de color_jugador en dos líneas
+    color_jugador_line1 = font.render("Tu eres el yoshi", True, (0, 0, 0))
+    color_jugador_line2 = font.render(juego['turno'].capitalize(), True, (0, 0, 0))
+    
     texto_verde = font.render(f"Verde: {juego['puntuacion']['verde']}", True, (0, 255, 0))
     texto_rojo = font.render(f"Rojo: {juego['puntuacion']['rojo']}", True, (255, 0, 0))
     
-    pantalla.blit(color_jugador, (150, 600))
-    pantalla.blit(texto_verde, (75, 630))
-    pantalla.blit(texto_rojo, (380, 630))
+    # Mostrar el mensaje de bienvenida en la parte inferior del tablero
+    pantalla.blit(mensaje_bienvenida, (20, 615))
+    pantalla.blit(Yoshis_world_font, (240, 605))
 
+    # Mostrar el turno del jugador y las puntuaciones en el panel derecho
+    pantalla.blit(color_jugador_line1, (620, 30))
+    pantalla.blit(color_jugador_line2, (700, 60))
+    pantalla.blit(puntos, (630, 140))
+    pantalla.blit(texto_verde, (630, 180))
+    pantalla.blit(texto_rojo, (630, 220))
+    
+      # Verificar si un Yoshi se queda sin movimientos
+    if not logica.obtener_movimientos_validos(juego, juego['turno']):
+        yoshi_sin_movimientos = 'Verde' if juego['turno'] == 'verde' else 'Rojo'
+        yoshi_sin_movimientos_line1 = font.render(f"¡El Yoshi " f"{yoshi_sin_movimientos}", True, (255, 0, 0))
+        yoshi_sin_movimientos_line2 = font.render(f" se quedó", True, (255, 0, 0))
+        yoshi_sin_movimientos_line3 = font.render(f" sin movimientos!", True, (255, 0, 0))
+        pantalla.blit(yoshi_sin_movimientos_line1, (610, 350))
+        pantalla.blit(yoshi_sin_movimientos_line2, (610, 380))
+        pantalla.blit(yoshi_sin_movimientos_line3, (610, 410))
 
-def mostrar_ganador(juego):
+    # Verificar si ningún Yoshi puede mover más
+    if not logica.obtener_movimientos_validos(juego, 'verde') and not logica.obtener_movimientos_validos(juego, 'rojo'):
+        fin_del_juego_texto = font.render("¡Fin del juego!", True, (0, 0, 0))
+        pantalla.blit(fin_del_juego_texto, (610, 450))
+
+def mostrar_ganador(juego, pantalla):
     total_verde = juego['puntuacion']['verde']
     total_rojo = juego['puntuacion']['rojo']
     if total_verde > total_rojo:
-        print("¡Yoshi verde gana!")
+        ganador_texto = font.render("¡Yoshi verde gana!", True, (0, 255, 0))  # Color verde
     elif total_rojo > total_verde:
-        print("¡Yoshi rojo gana!")
+        ganador_texto = font.render("¡Yoshi rojo gana!", True, (255, 0, 0))  # Color rojo
     else:
-        print("¡Empate!")
+        ganador_texto = font.render("¡Empate!", True, (0, 0, 0))  # Color negro
+    
+    pantalla.blit(ganador_texto, (610, 480))
+
