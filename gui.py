@@ -71,14 +71,12 @@ def iniciar_interfaz(juego):
                         juego["turno"] = 'verde'
                         if logica.verificar_fin_juego(juego):
                             mostrar_ganador(juego, pantalla)
-                            pygame.quit()
-                            quit()
+                            break
                         else:
                             logica.movimiento_maquina(juego)
                             if logica.verificar_fin_juego(juego):
                                 mostrar_ganador(juego, pantalla)
-                                pygame.quit()
-                                quit()
+                                break
 
         if not logica.obtener_movimientos_validos(juego, 'rojo') and juego["turno"] == 'rojo':
             juego["turno"] = 'verde'
@@ -119,43 +117,36 @@ def dibujar_tablero(pantalla, juego, imagen_yoshi_verde, imagen_yoshi_rojo):
         pantalla.blit(imagen_yoshi_rojo, (j * 75, i * 75))
 
 def mostrar_informacion(pantalla, juego):
-
     Yoshis_world_font = pygame.font.Font('fonts/SuperMarioBrosWii.otf', 80).render("Yoshi's World", True, (0, 0, 0))
-
 
     font = pygame.font.SysFont("Comic Sans MS", 28, bold=True)
     mensaje_bienvenida = font.render("Bienvenid@ a ", True, (0, 0, 0))
     puntos = font.render("Puntos", True, (0, 0, 0))
-    
-    # Separar el mensaje de color_jugador en dos líneas
-    color_jugador_line1 = font.render("Tu eres el yoshi", True, (0, 0, 0))
-    color_jugador_line2 = font.render(juego['turno'].capitalize(), True, (0, 0, 0))
-    
-    texto_verde = font.render(f"Verde: {juego['puntuacion']['verde']}", True, (0, 255, 0))
-    texto_rojo = font.render(f"Rojo: {juego['puntuacion']['rojo']}", True, (255, 0, 0))
-    
+
     # Mostrar el mensaje de bienvenida en la parte inferior del tablero
     pantalla.blit(mensaje_bienvenida, (20, 615))
     pantalla.blit(Yoshis_world_font, (240, 605))
 
     # Mostrar el turno del jugador y las puntuaciones en el panel derecho
-    pantalla.blit(color_jugador_line1, (620, 30))
-    
+    pantalla.blit(font.render("Tu eres el Yoshi", True, (0, 0, 0)), (620, 30))
+    pantalla.blit(font.render("Rojo", True, (255, 0, 0)), (700, 60))
+
     # Cambiar el color del texto del turno al color del Yoshi que tiene el turno
     color_turno = (0, 255, 0) if juego['turno'] == 'verde' else (255, 0, 0)
-    color_jugador_line2 = font.render(juego['turno'].capitalize(), True, color_turno)
-    pantalla.blit(color_jugador_line2, (700, 60))
-    
-    pantalla.blit(puntos, (630, 140))
-    pantalla.blit(texto_verde, (630, 180))
-    pantalla.blit(texto_rojo, (630, 220))
-    
+    pantalla.blit(font.render("Turno de:", True, (0, 0, 0)), (620, 100))
+    pantalla.blit(font.render(juego['turno'].capitalize(), True, color_turno), (700, 130))
+
+    pantalla.blit(puntos, (630, 180))
+    pantalla.blit(font.render(f"Verde: {juego['puntuacion']['verde']}", True, (0, 255, 0)), (630, 220))
+    pantalla.blit(font.render(f"Rojo: {juego['puntuacion']['rojo']}", True, (255, 0, 0)), (630, 260))
+
     # Verificar si un Yoshi se queda sin movimientos
     if not logica.obtener_movimientos_validos(juego, juego['turno']):
-        yoshi_sin_movimientos = 'Verde' if juego['turno'] == 'verde' else 'Rojo'
-        yoshi_sin_movimientos_line1 = font.render(f"¡El Yoshi " f"{yoshi_sin_movimientos}", True, (255, 0, 0))
-        yoshi_sin_movimientos_line2 = font.render(f" se quedó", True, (255, 0, 0))
-        yoshi_sin_movimientos_line3 = font.render(f" sin movimientos!", True, (255, 0, 0))
+        yoshi_sin_movimientos = 'verde' if juego['turno'] == 'verde' else 'rojo'
+        color_sin_movimientos = (0, 255, 0) if yoshi_sin_movimientos == 'verde' else (255, 0, 0)
+        yoshi_sin_movimientos_line1 = font.render(f"¡El Yoshi {yoshi_sin_movimientos.capitalize()}", True, color_sin_movimientos)
+        yoshi_sin_movimientos_line2 = font.render(f" se quedó", True, color_sin_movimientos)
+        yoshi_sin_movimientos_line3 = font.render(f" sin movimientos!", True, color_sin_movimientos)
         pantalla.blit(yoshi_sin_movimientos_line1, (610, 350))
         pantalla.blit(yoshi_sin_movimientos_line2, (610, 380))
         pantalla.blit(yoshi_sin_movimientos_line3, (610, 410))
@@ -164,6 +155,7 @@ def mostrar_informacion(pantalla, juego):
     if not logica.obtener_movimientos_validos(juego, 'verde') and not logica.obtener_movimientos_validos(juego, 'rojo'):
         fin_del_juego_texto = font.render("¡Fin del juego!", True, (0, 0, 0))
         pantalla.blit(fin_del_juego_texto, (610, 450))
+
 
 def mostrar_ganador(juego, pantalla):
     total_verde = juego['puntuacion']['verde']
